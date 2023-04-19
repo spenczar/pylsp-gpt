@@ -1,7 +1,8 @@
 from unittest.mock import ANY
-
+import pytest
 from pylsp_gpt import plugin
 from test.conftest import *
+import ast
 
 
 def test_definitions(config, workspace, document):
@@ -33,33 +34,33 @@ def test_definitions(config, workspace, document):
     assert response == expected
 
 
-def test_code_action(config, workspace, document, code_action_context):
+def test_code_action_replaces_docstrings(config, workspace, docstring_cases_document, code_action_context):
     selection = {
         "start": {
-            "line": 3,
-            "character": 0,
+            "line": 1,
+            "character": 3,
         },
         "end": {
-            "line": 4,
-            "character": 0,
+            "line": 1,
+            "character": 7,
         },
     }
 
     response = plugin.pylsp_code_actions(
         config=config,
         workspace=workspace,
-        document=document,
+        document=docstring_cases_document,
         range=selection,
         context=code_action_context,
     )
 
     expected = [
         {
-            "title": "Extract method",
-            "kind": "refactor.extract",
+            "title": "gpt-docstring",
+            "kind": "refactor",
             "command": {
-                "command": "example.refactor.extract",
-                "arguments": [document.uri, selection],
+                "command": "refactor.gpt.docstring",
+                "arguments": [docstring_cases_document.uri, selection],
             },
         },
     ]
@@ -81,13 +82,13 @@ def test_code_action(config, workspace, document, code_action_context):
         {
             "edit": {
                 "changes": {
-                    document.uri: [
+                    docstring_cases_document.uri: [
                         {
                             "range": {
-                                "start": {"line": 3, "character": 0},
-                                "end": {"line": 4, "character": 0},
+                                "start": {"line": 2, "character": 4},
+                                "end": {"line": 2, "character": 33},
                             },
-                            "newText": "replacement text",
+                            "newText": '"""This is a new docstring"""',
                         },
                     ],
                 },

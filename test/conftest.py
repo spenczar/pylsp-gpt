@@ -42,6 +42,11 @@ def document(workspace):
 
 
 @pytest.fixture
+def docstring_cases_document(workspace):
+    return create_document(workspace, "docstring_cases.py")
+
+
+@pytest.fixture
 def code_action_context():
     # https://microsoft.github.io/language-server-protocol/specifications/specification-3-17/#codeActionKind
     code_action_kind = [
